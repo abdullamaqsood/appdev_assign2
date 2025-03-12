@@ -25,7 +25,7 @@ class CategoryButtons extends StatelessWidget {
       child: Row(
         children: categoryList.map((category) {
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
             child: ChoiceChip(
               label: Text(category),
               selected: selectedCategory == category,
