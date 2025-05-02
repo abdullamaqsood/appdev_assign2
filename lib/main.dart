@@ -84,21 +84,44 @@ class _ProductsScreenState extends State<ProductsScreen> {
           Expanded(
             child: productProvider.isLoading
                 ? const ShimmerGrid()
-                : GridView.builder(
-                    padding: const EdgeInsets.all(10),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                      childAspectRatio: 0.7,
-                    ),
-                    itemCount: filteredProducts.length,
-                    itemBuilder: (context, index) {
-                      return ProductCard(product: filteredProducts[index]);
-                    },
-                  ),
-          ),
+                : productProvider.products.isEmpty
+                    ? Center(
+                        child: Text(productProvider.isOffline
+                            ? 'No Internet Connection'
+                            : 'No Products Found'))
+                    : Column(
+                        children: [
+                          if (productProvider.isOffline)
+                            Container(
+                              width: double.infinity,
+                              color: Colors.redAccent,
+                              padding: const EdgeInsets.all(8),
+                              child: const Text(
+                                'You are offline – showing cached data',
+                                style: TextStyle(color: Colors.white),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          Expanded(
+                            child: GridView.builder(
+                              padding: const EdgeInsets.all(10),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                crossAxisSpacing: 10,
+                                mainAxisSpacing: 10,
+                                childAspectRatio: 0.7,
+                              ),
+                              itemCount: filteredProducts.length,
+                              itemBuilder: (context, index) {
+                                return ProductCard(
+                                    product: filteredProducts[index]);
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+          )
         ],
       ),
     );

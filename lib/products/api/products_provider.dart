@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:appdev_assign2/products/api/products_model.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import '../api/products_model.dart';
+import '../api/product_database.dart';
 
 class ProductProvider extends ChangeNotifier {
   bool isLoading = false;
+  bool isOffline = false; // 👈 NEW
   List<ProductModel> _products = [];
 
   List<ProductModel> get products => _products;
@@ -16,20 +19,34 @@ class ProductProvider extends ChangeNotifier {
 
   Future<void> getAllProducts() async {
     setLoading(true);
-    const url = 'https://fakestoreapi.com/products';
 
-    try {
-      final response = await http.get(Uri.parse(url));
+    final connectivity = await Connectivity().checkConnectivity();
 
-      if (response.statusCode == 200) {
-        final jsonData = jsonDecode(response.body) as List;
-        _products =
-            jsonData.map((item) => ProductModel.fromJson(item)).toList();
+    if (connectivity != ConnectivityResult.none) {
+      isOffline = false;
+      const url = 'https://fakestoreapi.com/products';
+
+      try {
+        final response = await http.get(Uri.parse(url));
+
+        if (response.statusCode == 200) {
+          final jsonData = jsonDecode(response.body) as List;
+          _products =
+              jsonData.map((item) => ProductModel.fromJson(item)).toList();
+
+          await ProductDatabase.instance.insertProducts(_products);
+        }
+      } catch (e) {
+        print("API fetch error: $e");
+        _products = await ProductDatabase.instance.getProducts();
+        isOffline = true;
       }
-    } catch (e) {
-      print("Error fetching products: $e");
+    } else {
+      isOffline = true;
+      _products = await ProductDatabase.instance.getProducts();
     }
 
     setLoading(false);
+    notifyListeners();
   }
 }

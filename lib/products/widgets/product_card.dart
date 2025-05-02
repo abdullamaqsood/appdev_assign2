@@ -2,6 +2,8 @@ import 'package:appdev_assign2/products/api/products_model.dart';
 import 'package:appdev_assign2/products/widgets/product_detail.dart';
 import 'package:appdev_assign2/products/widgets/rating_stars.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:appdev_assign2/products/api/products_provider.dart';
 
 class ProductCard extends StatelessWidget {
   final ProductModel product;
@@ -25,10 +27,31 @@ class ProductCard extends StatelessWidget {
               child: ClipRRect(
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(10)),
-                child: Image.network(
-                  product.image,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
+                child: Consumer<ProductProvider>(
+                  builder: (context, provider, child) {
+                    if (provider.isOffline) {
+                      return Container(
+                        color: Colors.grey[300],
+                        child: const Center(
+                          child: Icon(Icons.image_not_supported,
+                              size: 40, color: Colors.grey),
+                        ),
+                      );
+                    } else {
+                      return Image.network(
+                        product.image,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: Colors.grey[300],
+                          child: const Center(
+                            child: Icon(Icons.broken_image,
+                                size: 40, color: Colors.grey),
+                          ),
+                        ),
+                      );
+                    }
+                  },
                 ),
               ),
             ),
